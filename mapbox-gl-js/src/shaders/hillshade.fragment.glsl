@@ -1,5 +1,6 @@
 uniform sampler2D u_image;
 varying vec2 v_pos;
+varying vec4 v_pixel;
 
 uniform vec2 u_latrange;
 uniform vec2 u_light;
@@ -8,6 +9,12 @@ uniform vec4 u_highlight;
 uniform vec4 u_accent;
 
 #define PI 3.141592653589793
+
+float getElevation(vec2 coord) {
+	// Convert encoded elevation value to meters
+	vec4 data = texture2D(u_image, coord) * 256.0;
+	return ((data.r * 256.0 * 256.0 + data.g * 256.0 + data.b) / 10.0 - 10000.0);
+}
 
 void main() {
     vec4 pixel = texture2D(u_image, v_pos);
@@ -45,6 +52,14 @@ void main() {
     float shade = abs(mod((aspect + azimuth) / PI + 0.5, 2.0) - 1.0);
     vec4 shade_color = mix(u_shadow, u_highlight, shade) * sin(scaledSlope) * clamp(intensity * 2.0, 0.0, 1.0);
     gl_FragColor = accent_color * (1.0 - shade_color.a) + shade_color;
+
+	//gl_FragColor = vec4(v_pos.x, v_pos.y, 0, 1.0);
+	
+	//float e = getElevation(v_pos);
+	//float height = v_pixel.b * 100000.0;
+	//float e = height / 3000.0;
+	//gl_FragColor = vec4(e, 0, 0, 1);
+	//gl_FragColor = vec4(pixel.r, pixel.g, pixel.b, 1);
 
 #ifdef OVERDRAW_INSPECTOR
     gl_FragColor = vec4(1.0);
